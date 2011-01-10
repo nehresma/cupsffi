@@ -1,0 +1,3 @@
+module Cupsffi
+  # Your code goes here...
+end

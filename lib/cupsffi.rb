@@ -1,3 +1,4 @@
-module Cupsffi
-  # Your code goes here...
-end
+require 'ffi'
+
+require 'cupsffi/lib'
+require 'cupsffi/cups'

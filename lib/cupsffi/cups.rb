@@ -4,7 +4,7 @@ class Cups
     dest_count = CupsFFI::cupsGetDests(p)
     ary = []
     dest_count.times do |i|
-      d = CupsFFI::CupsDestS.new(p.get_pointer(i))
+      d = CupsFFI::CupsDestS.new(p.get_pointer(0) + (CupsFFI::CupsDestS.size * i))
       ary.push(d[:name].dup)
     end
     CupsFFI::cupsFreeDests(dest_count, p.get_pointer(0))
@@ -16,7 +16,7 @@ class Cups
     dest_count = CupsFFI::cupsGetDests(p)
     hash = {}
     dest_count.times do |i|
-      dest = CupsFFI::CupsDestS.new(p.get_pointer(i))
+      dest = CupsFFI::CupsDestS.new(p.get_pointer(0) + (CupsFFI::CupsDestS.size * i))
       next unless dest[:name] == printer_name
       dest[:num_options].times do |j|
         options = CupsFFI::CupsOptionS.new(dest[:options] + (CupsFFI::CupsOptionS.size * j))

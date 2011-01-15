@@ -17,10 +17,6 @@ module CupsFFI
             :options, :pointer  # pointer type is CupsOptionS
   end
 
-  class CupsDestT < FFI::Struct
-    layout  :dest, CupsDestS
-  end
-
   attach_function 'cupsGetDests', [ :pointer ], :int
   attach_function 'cupsFreeDests', [ :int, :pointer ], :void
 end

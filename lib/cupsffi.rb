@@ -1,4 +1,5 @@
 require 'ffi'
 
 require 'cupsffi/lib'
-require 'cupsffi/cups'
+require 'cupsffi/printer'
+require 'cupsffi/job'

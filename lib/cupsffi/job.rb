@@ -2,14 +2,14 @@ class Job
   attr_reader :id, :printer
 
   def initialize(id, printer = nil)
-    @id = id
+    @id = Integer(id)
     @printer = printer unless printer.nil?
   end
 
   def cancel(printer = nil)
     raise "cancel parameter must be a Printer or String" unless printer.nil? || [Printer, String].include?(printer.class)
     p = printer || @printer
-    r = CupsFFI::cupsCancelJob(printer.kind_of?(String) ? p : p.name, @id)
+    r = CupsFFI::cupsCancelJob(p.kind_of?(String) ? p : p.name, @id)
     raise CupsFFI::cupsLastErrorString() if r == 0
   end
 

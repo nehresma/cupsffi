@@ -4,6 +4,8 @@ module CupsFFI
   extend FFI::Library
   ffi_lib 'cups'
 
+  ### cups.h API
+
   CUPS_JOBID_ALL = -1
   CUPS_WHICHJOBS_ALL = -1
   CUPS_WHICHJOBS_ACTIVE = 0
@@ -211,4 +213,87 @@ module CupsFFI
   # Returns
   #  - IppStatus
   attach_function 'cupsFinishDocument', [:pointer, :string], IppStatus
+
+  # Parameters
+  #  - printer name
+  # Returns
+  #  - filename for PPD file
+  attach_function 'cupsGetPPD', [:string], :string
+
+
+
+  ### ppd.h API
+  PPDCS = enum [:ppd_cs_cmyk, -4,
+                :ppd_cs_cmy,
+                :ppd_cs_gray, 1,
+                :ppd_cs_rgb, 3,
+                :ppd_cs_rgbk,
+                :ppd_cs_n]
+
+  class PPDFileS < FFI::ManagedStruct
+    layout  :language_level, :int,
+            :color_device, :int,
+            :variable_sizes, :int,
+            :accurate_screens, :int,
+            :contone_only, :int,
+            :landscape, :int,
+            :model_number, :int,
+            :manual_copies, :int,
+            :throughput, :int,
+            :colorspace, PPDCS,
+            :patches, :string,
+            :num_emulations, :int,
+            :emulations, :pointer,
+            :jcl_begin, :string,
+            :jcl_ps, :string,
+            :jcl_end, :string,
+            :lang_encoding, :string,
+            :lang_version, :string,
+            :modelname, :string,
+            :ttrasterizer, :string,
+            :manufacturer, :string,
+            :product, :string,
+            :nickname, :string,
+            :short_nickname, :string,
+            :num_groups, :int,
+            :groups, :pointer,
+            :num_sizes, :int,
+            :sizes, :pointer,
+            :custom_min, [:float, 2],
+            :custom_max, [:float, 2],
+            :custom_margins, [:float, 4],
+            :num_consts, :int,
+            :consts, :pointer,
+            :num_fonts, :int,
+            :fonts, :pointer, # **char
+            :num_profiles, :int,
+            :profiles, :pointer,
+            :num_filters, :int,
+            :filters, :pointer, # **char
+            :flip_duplex, :int,
+            :protocols, :string,
+            :pcfilename, :string,
+            :num_attrs, :int,
+            :cur_attr, :int,
+            :attrs, :pointer,
+            :sorted_attrs, :pointer,
+            :options, :pointer,
+            :coptions, :pointer,
+            :marked, :pointer,
+            :cups_uiconstraints, :pointer
+
+    def self.release(ptr)
+      CupsFFI::ppdClose(ptr)
+    end
+  end
+
+  # Parameters
+  #  - filename for PPD file
+  # Returns
+  #  - pointer to PPDFileS struct
+  attach_function 'ppdOpenFile', [:string], :pointer
+
+  # Parameters
+  #  - pointer to PPDFileS struct
+  attach_function 'ppdClose', [:pointer], :void
 end

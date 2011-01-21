@@ -2,6 +2,7 @@ class Printer
   attr_reader :name
 
   def initialize(name)
+    raise "Printer not found" unless Printer.get_all_printer_names.include? name
     @name = name
   end
 

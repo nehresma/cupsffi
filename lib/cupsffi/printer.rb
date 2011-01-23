@@ -18,7 +18,7 @@ class Printer
     ary
   end
 
-  def options
+  def attributes
     p = FFI::MemoryPointer.new :pointer
     dest_count = CupsFFI::cupsGetDests(p)
     hash = {}
@@ -35,7 +35,7 @@ class Printer
   end
 
   def state
-    o = options
+    o = attributes
 
     {
       :state =>

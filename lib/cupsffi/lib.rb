@@ -223,12 +223,17 @@ module CupsFFI
 
 
   ### ppd.h API
-  PPDCS = enum [:ppd_cs_cmyk, -4,
+  PPD_MAX_NAME = 41
+  PPD_MAX_TEXT = 81
+
+  PPDCSE = enum [:ppd_cs_cmyk, -4,
                 :ppd_cs_cmy,
                 :ppd_cs_gray, 1,
                 :ppd_cs_rgb, 3,
                 :ppd_cs_rgbk,
                 :ppd_cs_n]
+  PPDUIE = enum [:boolean, :pickone, :pickmany]
+  PPDSectionE = enum [:any, :document, :exit, :jcl, :page, :prolog]
 
   class PPDFileS < FFI::ManagedStruct
     layout  :language_level, :int,
@@ -240,7 +245,7 @@ module CupsFFI
             :model_number, :int,
             :manual_copies, :int,
             :throughput, :int,
-            :colorspace, PPDCS,
+            :colorspace, PPDCSE,
             :patches, :string,
             :num_emulations, :int,
             :emulations, :pointer,
@@ -287,6 +292,26 @@ module CupsFFI
     end
   end
 
+  class PPDChoiceS < FFI::Struct
+    layout  :marked, :char,
+            :choice, [:char, PPD_MAX_NAME],
+            :text, [:char, PPD_MAX_TEXT],
+            :code, :string,
+            :option, :pointer
+  end
+
+  class PPDOptionS < FFI::Struct
+    layout  :conflicted, :char,
+            :keyword, [:char, PPD_MAX_NAME],
+            :defchoice, [:char, PPD_MAX_NAME],
+            :text, [:char, PPD_MAX_TEXT],
+            :ui, PPDUIE,
+            :section, PPDSectionE,
+            :order, :float,
+            :num_choices, :int,
+            :choices, :pointer
+  end
+
   # Parameters
   #  - filename for PPD file
   # Returns
@@ -296,4 +321,34 @@ module CupsFFI
   # Parameters
   #  - pointer to PPDFileS struct
   attach_function 'ppdClose', [:pointer], :void
+
+  # Parameters
+  #  - pointer to PPDFileS struct
+  # Returns
+  #  - pointer to PPDOptionS struct
+  attach_function 'ppdFirstOption', [:pointer], :pointer
+
+  # Parameters
+  #  - pointer to PPDFileS struct
+  # Returns
+  #  - pointer to PPDOptionS struct
+  attach_function 'ppdNextOption', [:pointer], :pointer
+
+
+
+
+
+  ### array.h API
+
+  # Parameters
+  #  - pointer to _cups_array_s struct
+  # Returns
+  #  - void pointer to first element
+  attach_function 'cupsArrayFirst', [:pointer], :pointer
+
+  # Parameters
+  #  - pointer to _cups_array_s struct
+  # Returns
+  #  - void pointer to first element
+  attach_function 'cupsArrayNext', [:pointer], :pointer
 end

@@ -220,6 +220,20 @@ module CupsFFI
   #  - filename for PPD file
   attach_function 'cupsGetPPD', [:string], :string
 
+  # Parameters
+  #  - option name
+  #  - option value
+  #  - number of options
+  #  - pointer to options
+  # Returns
+  #  - number of options
+  attach_function 'cupsAddOption', [:string, :string, :int, :pointer], :int
+
+  # Parameters
+  #  - number of options
+  #  - pointer to options
+  attach_function 'cupsFreeOptions', [:int, :pointer], :void
+
 
 
   ### ppd.h API

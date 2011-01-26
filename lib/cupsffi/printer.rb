@@ -49,18 +49,46 @@ class Printer
     }
   end
 
-  def print_file(file_name)
+  def print_file(file_name, options = {})
     raise "File not found: #{file_name}" unless File.exists? file_name
 
-    job_id = CupsFFI::cupsPrintFile(@name, file_name, file_name, 0, nil)
+    options_pointer = nil
+    num_options = 0
+    unless options.empty?
+      options_pointer = FFI::MemoryPointer.new :pointer
+      options.map do |key,value|
+        num_options = CupsFFI::cupsAddOption(key.to_s, value.to_s, num_options, options_pointer)
+      end
+    end
 
-    raise CupsFFI::cupsLastErrorString() if job_id == 0
+    job_id = CupsFFI::cupsPrintFile(@name, file_name, file_name, num_options, options_pointer.get_pointer(0))
+
+    if job_id == 0
+      last_error = CupsFFI::cupsLastErrorString()
+      CupsFFI::cupsFreeOptions(num_options, options_pointer.get_pointer(0)) unless options_pointer.nil?
+      raise last_error
+    end
+
+    CupsFFI::cupsFreeOptions(num_options, options_pointer.get_pointer(0)) unless options_pointer.nil?
     Job.new(job_id, self)
   end
 
-  def print_data(data, mime_type)
-    job_id = CupsFFI::cupsCreateJob(CupsFFI::CUPS_HTTP_DEFAULT, @name, 'data job', 0, nil)
-    raise CupsFFI::cupsLastErrorString() if job_id == 0
+  def print_data(data, mime_type, options = {})
+    options_pointer = nil
+    num_options = 0
+    unless options.empty?
+      options_pointer = FFI::MemoryPointer.new :pointer
+      options.map do |key,value|
+        num_options = CupsFFI::cupsAddOption(key.to_s, value.to_s, num_options, options_pointer)
+      end
+    end
+
+    job_id = CupsFFI::cupsCreateJob(CupsFFI::CUPS_HTTP_DEFAULT, @name, 'data job', num_options, options_pointer)
+    if job_id == 0
+      last_error = CupsFFI::cupsLastErrorString()
+      CupsFFI::cupsFreeOptions(num_options, options_pointer.get_pointer(0)) unless options_pointer.nil?
+      raise last_error
+    end
 
     http_status = CupsFFI::cupsStartDocument(CupsFFI::CUPS_HTTP_DEFAULT, @name,
                                              job_id, 'my doc', mime_type, 1)
@@ -69,8 +97,12 @@ class Printer
 
     ipp_status = CupsFFI::cupsFinishDocument(CupsFFI::CUPS_HTTP_DEFAULT, @name)
 
-    raise ipp_status.to_s unless ipp_status == CupsFFI::IppStatus.find(:ipp_ok)
+    unless ipp_status == CupsFFI::IppStatus.find(:ipp_ok)
+      CupsFFI::cupsFreeOptions(num_options, options_pointer.get_pointer(0)) unless options_pointer.nil?
+      raise ipp_status.to_s
+    end
 
+    CupsFFI::cupsFreeOptions(num_options, options_pointer.get_pointer(0)) unless options_pointer.nil?
     Job.new(job_id, self)
   end
 

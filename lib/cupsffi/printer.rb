@@ -55,21 +55,23 @@ class Printer
     options_pointer = nil
     num_options = 0
     unless options.empty?
+      validate_options(options)
       options_pointer = FFI::MemoryPointer.new :pointer
       options.map do |key,value|
         num_options = CupsFFI::cupsAddOption(key.to_s, value.to_s, num_options, options_pointer)
       end
+      options_pointer = options_pointer.get_pointer(0)
     end
 
-    job_id = CupsFFI::cupsPrintFile(@name, file_name, file_name, num_options, options_pointer.get_pointer(0))
+    job_id = CupsFFI::cupsPrintFile(@name, file_name, file_name, num_options, options_pointer)
 
     if job_id == 0
       last_error = CupsFFI::cupsLastErrorString()
-      CupsFFI::cupsFreeOptions(num_options, options_pointer.get_pointer(0)) unless options_pointer.nil?
+      CupsFFI::cupsFreeOptions(num_options, options_pointer) unless options_pointer.nil?
       raise last_error
     end
 
-    CupsFFI::cupsFreeOptions(num_options, options_pointer.get_pointer(0)) unless options_pointer.nil?
+    CupsFFI::cupsFreeOptions(num_options, options_pointer) unless options_pointer.nil?
     Job.new(job_id, self)
   end
 
@@ -77,16 +79,18 @@ class Printer
     options_pointer = nil
     num_options = 0
     unless options.empty?
+      validate_options(options)
       options_pointer = FFI::MemoryPointer.new :pointer
       options.map do |key,value|
         num_options = CupsFFI::cupsAddOption(key.to_s, value.to_s, num_options, options_pointer)
       end
+      options_pointer = options_pointer.get_pointer(0)
     end
 
     job_id = CupsFFI::cupsCreateJob(CupsFFI::CUPS_HTTP_DEFAULT, @name, 'data job', num_options, options_pointer)
     if job_id == 0
       last_error = CupsFFI::cupsLastErrorString()
-      CupsFFI::cupsFreeOptions(num_options, options_pointer.get_pointer(0)) unless options_pointer.nil?
+      CupsFFI::cupsFreeOptions(num_options, options_pointer) unless options_pointer.nil?
       raise last_error
     end
 
@@ -97,12 +101,12 @@ class Printer
 
     ipp_status = CupsFFI::cupsFinishDocument(CupsFFI::CUPS_HTTP_DEFAULT, @name)
 
-    unless ipp_status == CupsFFI::IppStatus.find(:ipp_ok)
-      CupsFFI::cupsFreeOptions(num_options, options_pointer.get_pointer(0)) unless options_pointer.nil?
+    unless ipp_status == :ipp_ok
+      CupsFFI::cupsFreeOptions(num_options, options_pointer) unless options_pointer.nil?
       raise ipp_status.to_s
     end
 
-    CupsFFI::cupsFreeOptions(num_options, options_pointer.get_pointer(0)) unless options_pointer.nil?
+    CupsFFI::cupsFreeOptions(num_options, options_pointer) unless options_pointer.nil?
     Job.new(job_id, self)
   end
 
@@ -111,4 +115,23 @@ class Printer
     raise CupsFFI::cupsLastErrorString() if r == 0
   end
 
+
+  private
+  def validate_options(options)
+    ppd = PPD.new(@name)
+
+    # Build a hash of the ppd options for quick lookup
+    ppd_options = {}
+    ppd.options.each do |ppd_option|
+      ppd_options[ppd_option[:keyword]] = ppd_option
+    end
+
+    # Examine each input option to make sure that both the key and value are
+    # found in the ppd options.
+    options.each do |key,value|
+      raise "Invalid option #{key} for printer #{@name}" if ppd_options[key].nil?
+      choices = ppd_options[key][:choices].map{|c| c[:choice]}
+      raise "Invalid value #{value} for option #{key}" unless choices.include?(value)
+    end
+  end
 end

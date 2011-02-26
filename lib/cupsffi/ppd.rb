@@ -1,4 +1,4 @@
-class PPD
+class CupsPPD
   def initialize(printer_name)
     @file = CupsFFI::cupsGetPPD(printer_name)
     raise "No PPD found for #{printer_name}" if @file.nil?

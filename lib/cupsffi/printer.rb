@@ -1,8 +1,8 @@
-class Printer
+class CupsPrinter
   attr_reader :name
 
   def initialize(name)
-    raise "Printer not found" unless Printer.get_all_printer_names.include? name
+    raise "Printer not found" unless CupsPrinter.get_all_printer_names.include? name
     @name = name
   end
 
@@ -72,7 +72,7 @@ class Printer
     end
 
     CupsFFI::cupsFreeOptions(num_options, options_pointer) unless options_pointer.nil?
-    Job.new(job_id, self)
+    CupsJob.new(job_id, self)
   end
 
   def print_data(data, mime_type, options = {})
@@ -107,7 +107,7 @@ class Printer
     end
 
     CupsFFI::cupsFreeOptions(num_options, options_pointer) unless options_pointer.nil?
-    Job.new(job_id, self)
+    CupsJob.new(job_id, self)
   end
 
   def cancel_all_jobs
@@ -118,7 +118,7 @@ class Printer
 
   private
   def validate_options(options)
-    ppd = PPD.new(@name)
+    ppd = CupsPPD.new(@name)
 
     # Build a hash of the ppd options for quick lookup
     ppd_options = {}

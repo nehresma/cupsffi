@@ -1,4 +1,4 @@
-class Job
+class CupsJob
   attr_reader :id, :printer
 
   def initialize(id, printer = nil)
@@ -7,14 +7,14 @@ class Job
   end
 
   def cancel(printer = nil)
-    raise "cancel parameter must be a Printer or String" unless printer.nil? || [Printer, String].include?(printer.class)
+    raise "cancel parameter must be a CupsPrinter or String" unless printer.nil? || [CupsPrinter, String].include?(printer.class)
     p = printer || @printer
     r = CupsFFI::cupsCancelJob(p.kind_of?(String) ? p : p.name, @id)
     raise CupsFFI::cupsLastErrorString() if r == 0
   end
 
   def status(printer = nil)
-    raise "status parameter must be a Printer or String" unless printer.nil? || [Printer, String].include?(printer.class)
+    raise "status parameter must be a CupsPrinter or String" unless printer.nil? || [CupsPrinter, String].include?(printer.class)
     pointer = FFI::MemoryPointer.new :pointer
     p = printer || @printer
     job_count = CupsFFI::cupsGetJobs(pointer, p.kind_of?(String) ? p : p.name, 0, CupsFFI::CUPS_WHICHJOBS_ALL)

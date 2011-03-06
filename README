@@ -1,0 +1,56 @@
+CupsFFI is an FFI wrapper around libcups providing access to the Cups API
+as well as the PPD API.  It was written using Ruby 1.9.2 but has not been
+tested with previous versions.
+
+## License
+
+CupsFFI is MIT licensed.
+
+## Installation
+
+    gem install cupsffi
+
+## Setup
+
+Nothing required.  libcups is used to find and read all configuration.
+
+## Example usage
+
+    require 'cupsffi'
+    # Returns array of printer names:
+    #  => ["HP-Officejet-7200-series", "test-printer"] 
+    printers = CupsPrinter.get_all_printer_names
+
+    printer = CupsPrinter.new(printers.first)
+
+    # Returns a hash of the Cups printer options:
+    # => {"auth-info-required"=>"none",
+    #     "copies"=>"1",
+    #     "device-uri"=>"ipp://192.168.250.55/ipp/3000", ...
+    printer.attributes
+
+    # Return a hash of :state and :reasons.
+    # :state is :idle, :printing, or :stopped.  For example:
+    # {:state=>:idle, :reasons=>["none"]}
+    printer.state
+
+    # Print a file (pdf, jpg, ps, etc.).  You can pass in a hash of printer
+    # options if you want to override the printer's defaults.  A CupsJob object
+    # is returned.  CupsJob can be used to check on the job status.
+    job = printer.print_file('/tmp/example.jpg', {'InputSlot' => 'Upper', 'PageSize' => 'A4'})
+
+    # A job's status is a CupsFFI::IppJState enumeration: 
+    # [:pending, :held, :processing, :stopped, :canceled, :aborted, :completed]
+    job.status
+
+    # Cancel a specific job
+    job.cancel
+
+    # Print a binary blob of data.  The data should be in a String, and is
+    # passed to libcups as a char array.  You must also specify the mime type.
+    # Like print_file, printer options are... optional.  A CupsJob object is
+    # returned.
+    job = printer.print_data('hello world', 'text/plain')
+
+    # Cancel all outstanding jobs on the printer
+    printer.cancel_all_jobs

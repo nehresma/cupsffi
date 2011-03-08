@@ -24,7 +24,17 @@ require 'ffi'
 
 module CupsFFI
   extend FFI::Library
-  ffi_lib 'cups'
+
+  paths =
+    Array(
+      ENV['CUPS_LIB'] ||
+      Dir['/{opt,usr}/{,local/}lib{,64}/libcups.{dylib,so*}']
+      )
+  begin
+    ffi_lib(*paths)
+  rescue LoadError => le
+    raise LoadError, "Didn't find libcups on your system."
+  end
 
   ### cups.h API
 

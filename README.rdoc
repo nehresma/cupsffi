@@ -2,19 +2,19 @@ CupsFFI is an FFI wrapper around libcups providing access to the Cups API
 as well as the PPD API.  It was written using Ruby 1.9.2 but has not been
 tested with previous versions.
 
-## License
+== License
 
 CupsFFI is MIT licensed.
 
-## Installation
+== Installation
 
     gem install cupsffi
 
-## Setup
+== Setup
 
 Nothing required.  libcups is used to find and read all configuration.
 
-## Example usage
+== Example usage
 
     require 'cupsffi'
     # Returns array of printer names:

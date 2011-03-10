@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Nathan Ehresman"]
   s.email       = ["nehresma@gmail.com"]
-  s.homepage    = ""
+  s.homepage    = "http://www.tebros.com/"
   s.summary     = %q{FFI wrapper around libcups}
   s.description = %q{Simple wrapper around libcups to give CUPS printing capabilities to Ruby apps.}
 

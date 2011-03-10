@@ -2,6 +2,11 @@ CupsFFI is an FFI wrapper around libcups providing access to the Cups API
 as well as the PPD API.  It was written using Ruby 1.9.2 but has not been
 tested with previous versions.
 
+== Author
+
+Nathan Ehresman
+www.tebros.com
+
 == License
 
 CupsFFI is MIT licensed.

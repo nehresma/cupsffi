@@ -63,4 +63,60 @@ class CupsPPD
     end
     options
   end
+  
+  def attributes
+    attributes = []
+    attr_ptr = @ppd_file_s[:attrs].read_pointer
+    if !attr_ptr.null?
+      @ppd_file_s[:attrs].get_array_of_pointer(0, @ppd_file_s[:num_attrs]).each do |attr_ptr|
+        attribute = CupsFFI::PPDAttrS.new(attr_ptr)
+        attributes.push({
+          :name => String.new(attribute[:name]),
+          :spec => String.new(attribute[:spec]),
+          :text => String.new(attribute[:text]),
+          :value => String.new(attribute[:value]),
+        })
+      end
+    end
+    attributes
+  end
+  
+  def attribute(name, spec=nil)
+    attributes = []
+    attribute_pointer = CupsFFI::ppdFindAttr(@pointer, name, spec)
+    while !attribute_pointer.null?
+      attribute = CupsFFI::PPDAttrS.new(attribute_pointer)
+      attributes.push({
+        :name => String.new(attribute[:name]),
+        :spec => String.new(attribute[:spec]),
+        :text => String.new(attribute[:text]),
+        :value => String.new(attribute[:value]),
+      })
+  
+      attribute_pointer = CupsFFI::ppdFindNextAttr(@pointer, name, spec)
+    end
+    attributes
+  end
+  
+  def page_size(name=nil)
+    size_ptr = CupsFFI::ppdPageSize(@pointer, name)
+    size = CupsFFI::PPDSizeS.new(size_ptr)
+    if size.null?
+      nil
+    else
+      {
+        :marked => (size[:marked] != 0),
+        :name => String.new(size[:name]),
+        :width => size[:width],
+        :length => size[:length],
+        :margin => {
+          :left => size[:left],
+          :bottom => size[:bottom],
+          :right => size[:right],
+          :top => size[:top]
+        }
+      }
+    end
+  end
+  
 end

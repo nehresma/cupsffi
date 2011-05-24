@@ -358,6 +358,24 @@ module CupsFFI
             :choices, :pointer
   end
 
+  class PPDAttrS < FFI::Struct
+    layout  :name, [:char, PPD_MAX_NAME],
+            :spec, [:char, PPD_MAX_NAME],
+            :text, [:char, PPD_MAX_TEXT],
+            :value, :string
+  end
+
+  class PPDSizeS < FFI::Struct
+    layout  :marked, :int,
+            :name, [:char, PPD_MAX_NAME],
+            :width, :float,
+            :length, :float,
+            :left, :float,
+            :bottom, :float,
+            :right, :float,
+            :top, :float
+  end
+
   # Parameters
   #  - filename for PPD file
   # Returns
@@ -380,6 +398,28 @@ module CupsFFI
   #  - pointer to PPDOptionS struct
   attach_function 'ppdNextOption', [:pointer], :pointer
 
+  # Parameters
+  #  - pointer to PPDFileS struct
+  #  - attribute name
+  #  - spec name
+  # Returns
+  #  - pointer to PPDAttrS struct
+  attach_function 'ppdFindAttr', [:pointer, :string, :string], :pointer
+
+  # Parameters
+  #  - pointer to PPDFileS struct
+  #  - attribute name
+  #  - spec name
+  # Returns
+  #  - pointer to PPDAttrS struct
+  attach_function 'ppdFindNextAttr', [:pointer, :string, :string], :pointer
+
+  # Parameters
+  #  - pointer to PPDFileS struct
+  #  - page name
+  # Returns
+  #  - pointer to PPDSizeS struct
+  attach_function 'ppdPageSize', [:pointer, :string], :pointer
 
 
 

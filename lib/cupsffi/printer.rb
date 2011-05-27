@@ -153,7 +153,9 @@ class CupsPrinter
     options.each do |key,value|
       raise "Invalid option #{key} for printer #{@name}" if ppd_options[key].nil?
       choices = ppd_options[key][:choices].map{|c| c[:choice]}
-      raise "Invalid value #{value} for option #{key}" unless choices.include?(value)
+      # Treat 'Custom.WIDTHxHEIGHT' as just 'Custom'
+      base_value = (value =~ /^Custom\./ && %w{PageRegion PageSize}.include?(key)) ? 'Custom' : value
+      raise "Invalid value #{value} for option #{key}" unless choices.include?(base_value)
     end
   end
 end

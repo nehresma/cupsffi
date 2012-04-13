@@ -28,7 +28,7 @@ module CupsFFI
   paths =
     Array(
       ENV['CUPS_LIB'] ||
-      Dir['/{opt,usr}/{,local/}lib{,64}/libcups.{dylib,so*}']
+      Dir['/{opt,usr}/{,local/}lib{,64}/{,x86_64-linux-gnu/}libcups.{dylib,so*}']
       )
   begin
     ffi_lib(*paths)

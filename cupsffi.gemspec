@@ -13,6 +13,7 @@ Gem::Specification.new do |s|
   s.description = %q{Simple wrapper around libcups to give CUPS printing capabilities to Ruby apps.}
 
   s.add_development_dependency "ffi"
+  s.add_runtime_dependency "ffi"
 
   s.rubyforge_project = "cupsffi"
 

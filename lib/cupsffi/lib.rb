@@ -30,6 +30,7 @@ module CupsFFI
       ENV['CUPS_LIB'] ||
       Dir['/{opt,usr}/{,local/}lib{,64}/{,x86_64-linux-gnu/}libcups.{dylib,so*}']
       )
+  raise LoadError, "Didn't find libcups on your system." if paths.empty?
   begin
     ffi_lib(*paths)
   rescue LoadError => le

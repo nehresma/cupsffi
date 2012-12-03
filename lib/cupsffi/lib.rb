@@ -28,8 +28,9 @@ module CupsFFI
   paths =
     Array(
       ENV['CUPS_LIB'] ||
-      Dir['/{opt,usr}/{,local/}lib{,64}/{,x86_64-linux-gnu/}libcups.{dylib,so*}']
+      Dir['/{opt,usr}/{,local/}lib{,64}/{,x86_64-linux-gnu/,i386-linux-gnu/}libcups.{dylib,so*}']
       )
+  raise LoadError, "Didn't find libcups on your system." if paths.empty?
   begin
     ffi_lib(*paths)
   rescue LoadError => le

@@ -176,6 +176,8 @@ module CupsFFI
 
   attach_function 'cupsGetDests', [ :pointer ], :int
 
+  attach_function 'cupsGetDests2', [ :pointer, :pointer ], :int
+
   # :int is the number of CupsDestS structs to free
   # :pointer is the first one
   attach_function 'cupsFreeDests', [ :int, :pointer ], :void
@@ -190,12 +192,16 @@ module CupsFFI
   #  - job number or 0 on error
   attach_function 'cupsPrintFile', [ :string, :string, :string, :int, :pointer ], :int
 
+  attach_function 'cupsPrintFile2', [ :pointer, :string, :string, :string, :int, :pointer ], :int
+
   attach_function 'cupsLastErrorString', [], :string
 
   # Parameters
   #  - printer name
   #  - job id
   attach_function 'cupsCancelJob', [:string, :int], :void
+
+  attach_function 'cupsCancelJob2', [:pointer, :string, :int], :void
 
   # Parameters
   #  - pointer to struct CupsJobS to populate

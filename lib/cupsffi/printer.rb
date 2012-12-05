@@ -30,7 +30,7 @@ class CupsPrinter
 
   def self.get_all_printer_names
     p = FFI::MemoryPointer.new :pointer
-    dest_count = CupsFFI::cupsGetDests(p)
+    dest_count = CupsFFI::cupsGetDests2(CupsFFI::CUPS_HTTP_DEFAULT, p)
     ary = []
     dest_count.times do |i|
       d = CupsFFI::CupsDestS.new(p.get_pointer(0) + (CupsFFI::CupsDestS.size * i))
@@ -42,7 +42,7 @@ class CupsPrinter
 
   def attributes
     p = FFI::MemoryPointer.new :pointer
-    dest_count = CupsFFI::cupsGetDests(p)
+    dest_count = CupsFFI::cupsGetDests2(CupsFFI::CUPS_HTTP_DEFAULT, p)
     hash = {}
     dest_count.times do |i|
       dest = CupsFFI::CupsDestS.new(p.get_pointer(0) + (CupsFFI::CupsDestS.size * i))
@@ -85,7 +85,7 @@ class CupsPrinter
       options_pointer = options_pointer.get_pointer(0)
     end
 
-    job_id = CupsFFI::cupsPrintFile(@name, file_name, file_name, num_options, options_pointer)
+    job_id = CupsFFI::cupsPrintFile2(CupsFFI::CUPS_HTTP_DEFAULT, @name, file_name, file_name, num_options, options_pointer)
 
     if job_id == 0
       last_error = CupsFFI::cupsLastErrorString()
@@ -133,7 +133,7 @@ class CupsPrinter
   end
 
   def cancel_all_jobs
-    r = CupsFFI::cupsCancelJob(@name, CupsFFI::CUPS_JOBID_ALL)
+    r = CupsFFI::cupsCancelJob2(CupsFFI::CUPS_HTTP_DEFAULT, @name, CupsFFI::CUPS_JOBID_ALL)
     raise CupsFFI::cupsLastErrorString() if r == 0
   end
 

@@ -23,15 +23,31 @@
 class CupsPrinter
   attr_reader :name, :connection
 
-  def initialize(name)
-    raise "Printer not found" unless CupsPrinter.get_all_printer_names.include? name
-    @name = name
-    @connection = @connection
+  def self.get_connection(args = {})
+    hostname = args[:hostname]
+    port     = args[:port] || 631
+
+    if hostname.nil?
+      return CupsFFI::CUPS_HTTP_DEFAULT
+    else
+      connection = CupsFFI::httpConnectEncrypt(hostname, port.to_i, CupsFFI::cupsEncryption())
+      raise "Printserver at #{hostname}:#{port} not available" if connection.null?
+
+      return connection
+    end
   end
 
-  def self.get_all_printer_names
+  def initialize(name, args = {})
+    raise "Printer not found" unless CupsPrinter.get_all_printer_names(args).include? name
+    @name = name
+    @connection = CupsPrinter.get_connection(args)
+  end
+
+  def self.get_all_printer_names(args = {})
+    connection = get_connection(args)
+
     p = FFI::MemoryPointer.new :pointer
-    dest_count = CupsFFI::cupsGetDests2(@connection, p)
+    dest_count = CupsFFI::cupsGetDests2(connection, p)
     ary = []
     dest_count.times do |i|
       d = CupsFFI::CupsDestS.new(p.get_pointer(0) + (CupsFFI::CupsDestS.size * i))

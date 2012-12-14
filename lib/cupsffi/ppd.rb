@@ -21,8 +21,8 @@
 # THE SOFTWARE.
 
 class CupsPPD
-  def initialize(printer_name)
-    @file = CupsFFI::cupsGetPPD(printer_name)
+  def initialize(printer_name, connection)
+    @file = CupsFFI::cupsGetPPD2(connection, printer_name)
     raise "No PPD found for #{printer_name}" if @file.nil?
 
     @pointer = CupsFFI::ppdOpenFile(@file)

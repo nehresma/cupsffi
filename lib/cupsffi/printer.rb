@@ -157,7 +157,7 @@ class CupsPrinter
 
   private
   def validate_options(options)
-    ppd = CupsPPD.new(@name)
+    ppd = CupsPPD.new(@name, @connection)
 
     # Build a hash of the ppd options for quick lookup
     ppd_options = {}

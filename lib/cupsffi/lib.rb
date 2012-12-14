@@ -260,6 +260,7 @@ module CupsFFI
   # Returns
   #  - filename for PPD file
   attach_function 'cupsGetPPD', [:string], :string
+  attach_function 'cupsGetPPD2', [:pointer, :string], :string
 
   # Parameters
   #  - option name

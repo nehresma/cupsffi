@@ -59,3 +59,12 @@ Nothing required.  libcups is used to find and read all configuration.
 
     # Cancel all outstanding jobs on the printer
     printer.cancel_all_jobs
+
+== Remote CUPS Server
+
+You may pass in :hostname and :port arguments when creating a CupsPrinter instance or querying
+for available printers.
+
+    remote_printers = CupsPrinter.get_all_printer_names(:hostname => 'print.example.com')
+    print = CupsPrinter.new(remote_printers.first, :hostname => 'print.example.com')
+

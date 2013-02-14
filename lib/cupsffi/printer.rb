@@ -21,16 +21,33 @@
 # THE SOFTWARE.
 
 class CupsPrinter
-  attr_reader :name
+  attr_reader :name, :connection
 
-  def initialize(name)
-    raise "Printer not found" unless CupsPrinter.get_all_printer_names.include? name
-    @name = name
+  def self.get_connection(args = {})
+    hostname = args[:hostname]
+    port     = args[:port] || 631
+
+    if hostname.nil?
+      return CupsFFI::CUPS_HTTP_DEFAULT
+    else
+      connection = CupsFFI::httpConnectEncrypt(hostname, port.to_i, CupsFFI::cupsEncryption())
+      raise "Printserver at #{hostname}:#{port} not available" if connection.null?
+
+      return connection
+    end
   end
 
-  def self.get_all_printer_names
+  def initialize(name, args = {})
+    raise "Printer not found" unless CupsPrinter.get_all_printer_names(args).include? name
+    @name = name
+    @connection = CupsPrinter.get_connection(args)
+  end
+
+  def self.get_all_printer_names(args = {})
+    connection = get_connection(args)
+
     p = FFI::MemoryPointer.new :pointer
-    dest_count = CupsFFI::cupsGetDests(p)
+    dest_count = CupsFFI::cupsGetDests2(connection, p)
     ary = []
     dest_count.times do |i|
       d = CupsFFI::CupsDestS.new(p.get_pointer(0) + (CupsFFI::CupsDestS.size * i))
@@ -42,7 +59,7 @@ class CupsPrinter
 
   def attributes
     p = FFI::MemoryPointer.new :pointer
-    dest_count = CupsFFI::cupsGetDests(p)
+    dest_count = CupsFFI::cupsGetDests2(@connection, p)
     hash = {}
     dest_count.times do |i|
       dest = CupsFFI::CupsDestS.new(p.get_pointer(0) + (CupsFFI::CupsDestS.size * i))
@@ -85,7 +102,7 @@ class CupsPrinter
       options_pointer = options_pointer.get_pointer(0)
     end
 
-    job_id = CupsFFI::cupsPrintFile(@name, file_name, file_name, num_options, options_pointer)
+    job_id = CupsFFI::cupsPrintFile2(@connection, @name, file_name, file_name, num_options, options_pointer)
 
     if job_id == 0
       last_error = CupsFFI::cupsLastErrorString()
@@ -109,19 +126,19 @@ class CupsPrinter
       options_pointer = options_pointer.get_pointer(0)
     end
 
-    job_id = CupsFFI::cupsCreateJob(CupsFFI::CUPS_HTTP_DEFAULT, @name, 'data job', num_options, options_pointer)
+    job_id = CupsFFI::cupsCreateJob(@connection, @name, 'data job', num_options, options_pointer)
     if job_id == 0
       last_error = CupsFFI::cupsLastErrorString()
       CupsFFI::cupsFreeOptions(num_options, options_pointer) unless options_pointer.nil?
       raise last_error
     end
 
-    http_status = CupsFFI::cupsStartDocument(CupsFFI::CUPS_HTTP_DEFAULT, @name,
+    http_status = CupsFFI::cupsStartDocument(@connection, @name,
                                              job_id, 'my doc', mime_type, 1)
 
-    http_status = CupsFFI::cupsWriteRequestData(CupsFFI::CUPS_HTTP_DEFAULT, data, data.length)
+    http_status = CupsFFI::cupsWriteRequestData(@connection, data, data.length)
 
-    ipp_status = CupsFFI::cupsFinishDocument(CupsFFI::CUPS_HTTP_DEFAULT, @name)
+    ipp_status = CupsFFI::cupsFinishDocument(@connection, @name)
 
     unless ipp_status == :ipp_ok
       CupsFFI::cupsFreeOptions(num_options, options_pointer) unless options_pointer.nil?
@@ -133,14 +150,14 @@ class CupsPrinter
   end
 
   def cancel_all_jobs
-    r = CupsFFI::cupsCancelJob(@name, CupsFFI::CUPS_JOBID_ALL)
+    r = CupsFFI::cupsCancelJob2(@connection, @name, CupsFFI::CUPS_JOBID_ALL)
     raise CupsFFI::cupsLastErrorString() if r == 0
   end
 
 
   private
   def validate_options(options)
-    ppd = CupsPPD.new(@name)
+    ppd = CupsPPD.new(@name, @connection)
 
     # Build a hash of the ppd options for quick lookup
     ppd_options = {}

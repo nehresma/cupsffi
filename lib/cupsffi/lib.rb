@@ -25,14 +25,12 @@ require 'ffi'
 module CupsFFI
   extend FFI::Library
 
-  paths =
-    Array(
-      ENV['CUPS_LIB'] ||
-      Dir['/{opt,usr}/{,local/}lib{,64}/{,x86_64-linux-gnu/,i386-linux-gnu/}libcups.{dylib,so*}']
-      )
-  raise LoadError, "Didn't find libcups on your system." if paths.empty?
   begin
-    ffi_lib(*paths)
+    if ENV['CUPS_LIB']
+      ffi_lib(ENV['CUPS_LIB'])
+    else
+      ffi_lib('cups')
+    end
   rescue LoadError => le
     raise LoadError, "Didn't find libcups on your system."
   end
@@ -172,9 +170,13 @@ module CupsFFI
 
 
 
+  attach_function 'cupsEncryption', [], :int
+  attach_function 'httpConnectEncrypt', [ :string, :int, :int], :pointer
 
 
   attach_function 'cupsGetDests', [ :pointer ], :int
+
+  attach_function 'cupsGetDests2', [ :pointer, :pointer ], :int
 
   # :int is the number of CupsDestS structs to free
   # :pointer is the first one
@@ -190,12 +192,16 @@ module CupsFFI
   #  - job number or 0 on error
   attach_function 'cupsPrintFile', [ :string, :string, :string, :int, :pointer ], :int
 
+  attach_function 'cupsPrintFile2', [ :pointer, :string, :string, :string, :int, :pointer ], :int
+
   attach_function 'cupsLastErrorString', [], :string
 
   # Parameters
   #  - printer name
   #  - job id
   attach_function 'cupsCancelJob', [:string, :int], :void
+
+  attach_function 'cupsCancelJob2', [:pointer, :string, :int], :void
 
   # Parameters
   #  - pointer to struct CupsJobS to populate
@@ -252,6 +258,7 @@ module CupsFFI
   # Returns
   #  - filename for PPD file
   attach_function 'cupsGetPPD', [:string], :string
+  attach_function 'cupsGetPPD2', [:pointer, :string], :string
 
   # Parameters
   #  - option name

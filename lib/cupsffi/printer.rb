@@ -168,14 +168,15 @@ class CupsPrinter
     # Examine each input option to make sure that both the key and value are
     # found in the ppd options.
     options.each do |key,value|
+      key_string = key.to_s
       # Accept common CUPS options
-      next if ['copies'].include?(key)
+      next if ['copies'].include?(key_string)
 
-      raise "Invalid option #{key} for printer #{@name}" if ppd_options[key].nil?
-      choices = ppd_options[key][:choices].map{|c| c[:choice]}
+      raise "Invalid option #{key} for printer #{@name}" if ppd_options[key_string].nil?
+      choices = ppd_options[key_string][:choices].map{|c| c[:choice]}
       # Treat 'Custom.WIDTHxHEIGHT' as just 'Custom'
-      base_value = (value =~ /^Custom\./ && %w{PageRegion PageSize}.include?(key)) ? 'Custom' : value
-      raise "Invalid value #{value} for option #{key}" unless choices.include?(base_value)
+      base_value = (value =~ /^Custom\./ && %w{PageRegion PageSize}.include?(key_string)) ? 'Custom' : value
+      raise "Invalid value #{value} for option #{key_string}" unless choices.include?(base_value)
     end
   end
 end

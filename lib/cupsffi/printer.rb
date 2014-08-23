@@ -37,10 +37,18 @@ class CupsPrinter
     end
   end
 
+  def self.release_connection(connection)
+    CupsFFI::httpClose(connection)
+  end
+
   def initialize(name, args = {})
     raise "Printer not found" unless CupsPrinter.get_all_printer_names(args).include? name
     @name = name
     @connection = CupsPrinter.get_connection(args)
+  end
+
+  def close
+    CupsPrinter.release_connection(@connection)
   end
 
   def self.get_all_printer_names(args = {})

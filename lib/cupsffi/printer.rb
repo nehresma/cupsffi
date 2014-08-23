@@ -37,6 +37,23 @@ class CupsPrinter
     end
   end
 
+  def self.walk_attributes(connection)
+    p = FFI::MemoryPointer.new :pointer
+    dest_count = CupsFFI::cupsGetDests2(connection, p)
+    dest_count.times do |i|
+      dest = CupsFFI::CupsDestS.new(p.get_pointer(0) + (CupsFFI::CupsDestS.size * i))
+      yield dest
+    end
+    CupsFFI::cupsFreeDests(dest_count, p.get_pointer(0))
+  end
+
+  def self.walk_sub_attributes(dest)
+    dest[:num_options].times do |j|
+      options = CupsFFI::CupsOptionS.new(dest[:options] + (CupsFFI::CupsOptionS.size * j))
+      yield options
+    end
+  end
+
   def self.release_connection(connection)
     CupsFFI::httpClose(connection)
   end
@@ -53,32 +70,22 @@ class CupsPrinter
 
   def self.get_all_printer_names(args = {})
     connection = get_connection(args)
-
-    p = FFI::MemoryPointer.new :pointer
-    dest_count = CupsFFI::cupsGetDests2(connection, p)
     ary = []
-    dest_count.times do |i|
-      d = CupsFFI::CupsDestS.new(p.get_pointer(0) + (CupsFFI::CupsDestS.size * i))
-      ary.push(d[:name].dup)
+    walk_attributes(connection) do |dest|
+      ary.push(dest[:name].dup)
     end
-    CupsFFI::cupsFreeDests(dest_count, p.get_pointer(0))
+    release_connection(connection)
     ary
   end
 
   def attributes
-    p = FFI::MemoryPointer.new :pointer
-    dest_count = CupsFFI::cupsGetDests2(@connection, p)
     hash = {}
-    dest_count.times do |i|
-      dest = CupsFFI::CupsDestS.new(p.get_pointer(0) + (CupsFFI::CupsDestS.size * i))
+    CupsPrinter.walk_attributes(@connection) do |dest|
       next unless dest[:name] == @name
-      dest[:num_options].times do |j|
-        options = CupsFFI::CupsOptionS.new(dest[:options] + (CupsFFI::CupsOptionS.size * j))
+      CupsPrinter.walk_sub_attributes(dest) do |options|
         hash[options[:name].dup] = options[:value].dup
       end
     end
-    CupsFFI::cupsFreeDests(dest_count, p.get_pointer(0))
-    hash
   end
 
   def state

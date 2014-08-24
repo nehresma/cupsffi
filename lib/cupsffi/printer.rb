@@ -78,6 +78,20 @@ class CupsPrinter
     ary
   end
 
+  def self.get_all_printer_attrs(args = {})
+    connection = get_connection(args)
+    hash = {}
+    walk_attributes(connection) do |dest|
+      pname = dest[:name].dup
+      hash[pname] ||= {}
+      walk_sub_attributes(dest) do |options|
+        hash[pname][options[:name].dup] = options[:value].dup
+      end
+    end
+    release_connection(connection)
+    hash
+  end
+
   def attributes
     hash = {}
     CupsPrinter.walk_attributes(@connection) do |dest|

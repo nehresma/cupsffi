@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+require 'date'
+
 class CupsPrinter
   attr_reader :name, :connection
 
@@ -100,6 +102,7 @@ class CupsPrinter
         hash[options[:name].dup] = options[:value].dup
       end
     end
+    hash
   end
 
   def state
@@ -181,6 +184,33 @@ class CupsPrinter
   def cancel_all_jobs
     r = CupsFFI::cupsCancelJob2(@connection, @name, CupsFFI::CUPS_JOBID_ALL)
     raise CupsFFI::cupsLastErrorString() if r == 0
+  end
+
+  def get_all_jobs(which = CupsFFI::CUPS_WHICHJOBS_ACTIVE)
+    pointer = FFI::MemoryPointer.new :pointer
+    job_count = CupsFFI::cupsGetJobs(pointer, @name, 0, which)
+
+    jobs = []
+    job_count.times do |i|
+      job = CupsFFI::CupsJobS.new(pointer.get_pointer(0) + (CupsFFI::CupsJobS.size * i))
+
+      jobs << {
+        :completed_time => job[:completed_time].nil? ? nil : DateTime.strptime(job[:completed_time].to_s, "%s"),
+        :creation_time => job[:creation_time].nil? ? nil : DateTime.strptime(job[:creation_time].to_s, "%s"),
+        :processing_time => job[:processing_time].nil? ? nil : DateTime.strptime(job[:processing_time].to_s, "%s"),
+        :dest => job[:dest].nil? ? nil : job[:dest].dup,
+        :format => job[:format].nil? ? nil : job[:format].dup,
+        :id => job[:id],
+        :priority => job[:priority],
+        :size => job[:size],
+        :title => job[:title].nil? ? nil : job[:title].dup,
+        :user => job[:user].nil? ? nil : job[:user].dup,
+        :state => job[:state].nil? ? nil : job[:state]
+      }
+    end
+
+    CupsFFI::cupsFreeJobs(job_count, pointer.get_pointer(0))
+    jobs
   end
 
 

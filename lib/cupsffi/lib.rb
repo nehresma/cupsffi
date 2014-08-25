@@ -172,6 +172,7 @@ module CupsFFI
 
   attach_function 'cupsEncryption', [], :int
   attach_function 'httpConnectEncrypt', [ :string, :int, :int], :pointer
+  attach_function 'httpClose', [ :pointer ], :void
 
 
   attach_function 'cupsGetDests', [ :pointer ], :int

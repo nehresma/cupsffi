@@ -245,7 +245,7 @@ module CupsFFI
   #  - length of data
   # Returns
   #  - HttpStatus
-  attach_function 'cupsWriteRequestData', [:pointer, :string, :size_t], HttpStatus
+  attach_function 'cupsWriteRequestData', [:pointer, :pointer, :size_t], HttpStatus
 
   # Parameters
   #  - pointer to http connection to server or CUPS_HTTP_DEFAULT

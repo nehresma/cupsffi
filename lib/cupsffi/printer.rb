@@ -165,12 +165,18 @@ class CupsPrinter
       raise last_error
     end
 
+    # Copy the data into a char pointer to allow null bytes
+    data_pointer = FFI::MemoryPointer.new(:char, data.bytesize)
+    data_pointer.put_bytes(0, data)
+
     http_status = CupsFFI::cupsStartDocument(@connection, @name,
                                              job_id, 'my doc', mime_type, 1)
 
-    http_status = CupsFFI::cupsWriteRequestData(@connection, data, data.length)
+    http_status = CupsFFI::cupsWriteRequestData(@connection, data_pointer, data.bytesize)
 
     ipp_status = CupsFFI::cupsFinishDocument(@connection, @name)
+
+    data_pointer.free
 
     unless ipp_status == :ipp_ok
       CupsFFI::cupsFreeOptions(num_options, options_pointer) unless options_pointer.nil?

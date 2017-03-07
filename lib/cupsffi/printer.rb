@@ -172,7 +172,7 @@ class CupsPrinter
     http_status = CupsFFI::cupsStartDocument(@connection, @name,
                                              job_id, 'my doc', mime_type, 1)
 
-    http_status = CupsFFI::cupsWriteRequestData(@connection, data_pointer, data.length)
+    http_status = CupsFFI::cupsWriteRequestData(@connection, data_pointer, data.bytesize)
 
     ipp_status = CupsFFI::cupsFinishDocument(@connection, @name)
 

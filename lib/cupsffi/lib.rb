@@ -170,18 +170,18 @@ module CupsFFI
 
 
 
-  attach_function 'cupsEncryption', [], :int
-  attach_function 'httpConnectEncrypt', [ :string, :int, :int], :pointer
-  attach_function 'httpClose', [ :pointer ], :void
+  attach_function 'cupsEncryption', [], :int, blocking: true
+  attach_function 'httpConnectEncrypt', [ :string, :int, :int], :pointer, blocking: true
+  attach_function 'httpClose', [ :pointer ], :void, blocking: true
 
 
-  attach_function 'cupsGetDests', [ :pointer ], :int
+  attach_function 'cupsGetDests', [ :pointer ], :int, blocking: true
 
-  attach_function 'cupsGetDests2', [ :pointer, :pointer ], :int
+  attach_function 'cupsGetDests2', [ :pointer, :pointer ], :int, blocking: true
 
   # :int is the number of CupsDestS structs to free
   # :pointer is the first one
-  attach_function 'cupsFreeDests', [ :int, :pointer ], :void
+  attach_function 'cupsFreeDests', [ :int, :pointer ], :void, blocking: true
 
   # Parameters:
   #  - printer name
@@ -191,18 +191,18 @@ module CupsFFI
   #  - a pointer to a CupsOptionS struct
   # Returns
   #  - job number or 0 on error
-  attach_function 'cupsPrintFile', [ :string, :string, :string, :int, :pointer ], :int
+  attach_function 'cupsPrintFile', [ :string, :string, :string, :int, :pointer ], :int, blocking: true
 
-  attach_function 'cupsPrintFile2', [ :pointer, :string, :string, :string, :int, :pointer ], :int
+  attach_function 'cupsPrintFile2', [ :pointer, :string, :string, :string, :int, :pointer ], :int, blocking: true
 
-  attach_function 'cupsLastErrorString', [], :string
+  attach_function 'cupsLastErrorString', [], :string, blocking: true
 
   # Parameters
   #  - printer name
   #  - job id
-  attach_function 'cupsCancelJob', [:string, :int], :void
+  attach_function 'cupsCancelJob', [:string, :int], :void, blocking: true
 
-  attach_function 'cupsCancelJob2', [:pointer, :string, :int], :void
+  attach_function 'cupsCancelJob2', [:pointer, :string, :int], :void, blocking: true
 
   # Parameters
   #  - pointer to struct CupsJobS to populate
@@ -211,12 +211,12 @@ module CupsFFI
   #  - whichjobs (CUPS_WHICHJOBS_ALL, CUPS_WHICHJOBS_ACTIVE, or CUPS_WHICHJOBS_COMPLETED)
   # Returns:
   #  - number of jobs
-  attach_function 'cupsGetJobs', [:pointer, :string, :int, :int], :int
+  attach_function 'cupsGetJobs', [:pointer, :string, :int, :int], :int, blocking: true
 
   # Parameters
   #  - number of jobs
   #  - pointer to the first CupsJobS to free
-  attach_function 'cupsFreeJobs', [:int, :pointer ], :void
+  attach_function 'cupsFreeJobs', [:int, :pointer ], :void, blocking: true
 
   # Parameters
   #  - pointer to http connection to server or CUPS_HTTP_DEFAULT
@@ -226,7 +226,7 @@ module CupsFFI
   #  - pointer to a CupsOptionS struct
   # Returns
   #  - job number or 0 on error
-  attach_function 'cupsCreateJob', [:pointer, :string, :string, :int, :pointer], :int
+  attach_function 'cupsCreateJob', [:pointer, :string, :string, :int, :pointer], :int, blocking: true
 
   # Parameters
   #  - pointer to http connection to server or CUPS_HTTP_DEFAULT
@@ -237,7 +237,7 @@ module CupsFFI
   #  - last document (1 for last document in job, 0 otherwise)
   # Returns
   #  - HttpStatus
-  attach_function 'cupsStartDocument', [:pointer, :string, :int, :string, :string, :int], HttpStatus
+  attach_function 'cupsStartDocument', [:pointer, :string, :int, :string, :string, :int], HttpStatus, blocking: true
 
   # Parameters
   #  - pointer to http connection to server or CUPS_HTTP_DEFAULT
@@ -245,21 +245,21 @@ module CupsFFI
   #  - length of data
   # Returns
   #  - HttpStatus
-  attach_function 'cupsWriteRequestData', [:pointer, :pointer, :size_t], HttpStatus
+  attach_function 'cupsWriteRequestData', [:pointer, :pointer, :size_t], HttpStatus, blocking: true
 
   # Parameters
   #  - pointer to http connection to server or CUPS_HTTP_DEFAULT
   #  - printer name
   # Returns
   #  - IppStatus
-  attach_function 'cupsFinishDocument', [:pointer, :string], IppStatus
+  attach_function 'cupsFinishDocument', [:pointer, :string], IppStatus, blocking: true
 
   # Parameters
   #  - printer name
   # Returns
   #  - filename for PPD file
-  attach_function 'cupsGetPPD', [:string], :string
-  attach_function 'cupsGetPPD2', [:pointer, :string], :string
+  attach_function 'cupsGetPPD', [:string], :string, blocking: true
+  attach_function 'cupsGetPPD2', [:pointer, :string], :string, blocking: true
 
   # Parameters
   #  - option name
@@ -268,12 +268,12 @@ module CupsFFI
   #  - pointer to options
   # Returns
   #  - number of options
-  attach_function 'cupsAddOption', [:string, :string, :int, :pointer], :int
+  attach_function 'cupsAddOption', [:string, :string, :int, :pointer], :int, blocking: true
 
   # Parameters
   #  - number of options
   #  - pointer to options
-  attach_function 'cupsFreeOptions', [:int, :pointer], :void
+  attach_function 'cupsFreeOptions', [:int, :pointer], :void, blocking: true
 
 
 
@@ -389,23 +389,23 @@ module CupsFFI
   #  - filename for PPD file
   # Returns
   #  - pointer to PPDFileS struct
-  attach_function 'ppdOpenFile', [:string], :pointer
+  attach_function 'ppdOpenFile', [:string], :pointer, blocking: true
 
   # Parameters
   #  - pointer to PPDFileS struct
-  attach_function 'ppdClose', [:pointer], :void
-
-  # Parameters
-  #  - pointer to PPDFileS struct
-  # Returns
-  #  - pointer to PPDOptionS struct
-  attach_function 'ppdFirstOption', [:pointer], :pointer
+  attach_function 'ppdClose', [:pointer], :void, blocking: true
 
   # Parameters
   #  - pointer to PPDFileS struct
   # Returns
   #  - pointer to PPDOptionS struct
-  attach_function 'ppdNextOption', [:pointer], :pointer
+  attach_function 'ppdFirstOption', [:pointer], :pointer, blocking: true
+
+  # Parameters
+  #  - pointer to PPDFileS struct
+  # Returns
+  #  - pointer to PPDOptionS struct
+  attach_function 'ppdNextOption', [:pointer], :pointer, blocking: true
 
   # Parameters
   #  - pointer to PPDFileS struct
@@ -413,7 +413,7 @@ module CupsFFI
   #  - spec name
   # Returns
   #  - pointer to PPDAttrS struct
-  attach_function 'ppdFindAttr', [:pointer, :string, :string], :pointer
+  attach_function 'ppdFindAttr', [:pointer, :string, :string], :pointer, blocking: true
 
   # Parameters
   #  - pointer to PPDFileS struct
@@ -421,14 +421,14 @@ module CupsFFI
   #  - spec name
   # Returns
   #  - pointer to PPDAttrS struct
-  attach_function 'ppdFindNextAttr', [:pointer, :string, :string], :pointer
+  attach_function 'ppdFindNextAttr', [:pointer, :string, :string], :pointer, blocking: true
 
   # Parameters
   #  - pointer to PPDFileS struct
   #  - page name
   # Returns
   #  - pointer to PPDSizeS struct
-  attach_function 'ppdPageSize', [:pointer, :string], :pointer
+  attach_function 'ppdPageSize', [:pointer, :string], :pointer, blocking: true
 
 
 
@@ -439,11 +439,11 @@ module CupsFFI
   #  - pointer to _cups_array_s struct
   # Returns
   #  - void pointer to first element
-  attach_function 'cupsArrayFirst', [:pointer], :pointer
+  attach_function 'cupsArrayFirst', [:pointer], :pointer, blocking: true
 
   # Parameters
   #  - pointer to _cups_array_s struct
   # Returns
   #  - void pointer to first element
-  attach_function 'cupsArrayNext', [:pointer], :pointer
+  attach_function 'cupsArrayNext', [:pointer], :pointer, blocking: true
 end

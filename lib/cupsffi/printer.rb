@@ -93,6 +93,15 @@ class CupsPrinter
     release_connection(connection)
     hash
   end
+  
+  def self.default_printer
+    connection = get_connection
+    walk_attributes(connection) do |dest|
+      return dest[:name].dup if dest[:is_default] == 1
+    end
+    release_connection(connection)
+    nil
+  end
 
   def attributes
     hash = {}

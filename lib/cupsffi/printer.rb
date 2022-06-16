@@ -130,7 +130,7 @@ class CupsPrinter
   end
 
   def print_file(file_name, options = {})
-    raise "File not found: #{file_name}" unless File.exists? file_name
+    raise "File not found: #{file_name}" unless File.exist? file_name
 
     options_pointer = nil
     num_options = 0
